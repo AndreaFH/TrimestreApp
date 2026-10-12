@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { NativeSelect, Button, HStack, Table, Input, Text, Badge, InputGroup } from '@chakra-ui/react';
+import { NativeSelect, Button, HStack, Table, Input, Text, Badge, InputGroup, ScrollArea } from '@chakra-ui/react';
 import { Toaster, toaster } from './toaster';
 import {
   trimestreDeMes,
@@ -23,7 +23,7 @@ type RegistroMap = Map<string, DayEntry>;
 type Pantalla = 'mes' | 'historial' | 'ajustes';
 
 interface CampoImporteProps {
-  valor: string;                    // valor ya guardado y formateado
+  valor: string; // valor ya guardado y formateado
   onGuardar: (texto: string) => void;
 }
 
@@ -274,58 +274,51 @@ const App: React.FC = () => {
       <header style={{ gap: '16px', padding: '24px 30px' }}>
         <div className="header-left" style={{ flex: 1 }}>
           <div className="selector-group" style={{ gap: '12px', marginBottom: '24px' }}>
-          <NativeSelect.Root width="120px">
-          <NativeSelect.Field
-            value={año}
-            onChange={(e) => cambiarAño(parseInt(e.currentTarget.value, 10))}
-          >
-            {Array.from({ length: 10 }, (_, i) => añoActual - 5 + i).map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </NativeSelect.Field>
-          <NativeSelect.Indicator />
-        </NativeSelect.Root>
-        <NativeSelect.Root width="160px">
-        <NativeSelect.Field
-          value={mesActualVista}
-          onChange={(e) => {
-            const nuevoMes = parseInt(e.currentTarget.value, 10);
-            setMesActualVista(nuevoMes);
-            cambiarMes(nuevoMes);
-          }}
-        >
-          <option value={1}>Enero</option>
-          <option value={2}>Febrero</option>
-          <option value={3}>Marzo</option>
-          <option value={4}>Abril</option>
-          <option value={5}>Mayo</option>
-          <option value={6}>Junio</option>
-          <option value={7}>Julio</option>
-          <option value={8}>Agosto</option>
-          <option value={9}>Septiembre</option>
-          <option value={10}>Octubre</option>
-          <option value={11}>Noviembre</option>
-          <option value={12}>Diciembre</option>
-        </NativeSelect.Field>
-        <NativeSelect.Indicator />
-      </NativeSelect.Root>
+            <NativeSelect.Root width="120px">
+              <NativeSelect.Field value={año} onChange={(e) => cambiarAño(parseInt(e.currentTarget.value, 10))}>
+                {Array.from({ length: 10 }, (_, i) => añoActual - 5 + i).map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
+            <NativeSelect.Root width="160px">
+              <NativeSelect.Field
+                value={mesActualVista}
+                onChange={(e) => {
+                  const nuevoMes = parseInt(e.currentTarget.value, 10);
+                  setMesActualVista(nuevoMes);
+                  cambiarMes(nuevoMes);
+                }}
+              >
+                <option value={1}>Enero</option>
+                <option value={2}>Febrero</option>
+                <option value={3}>Marzo</option>
+                <option value={4}>Abril</option>
+                <option value={5}>Mayo</option>
+                <option value={6}>Junio</option>
+                <option value={7}>Julio</option>
+                <option value={8}>Agosto</option>
+                <option value={9}>Septiembre</option>
+                <option value={10}>Octubre</option>
+                <option value={11}>Noviembre</option>
+                <option value={12}>Diciembre</option>
+              </NativeSelect.Field>
+              <NativeSelect.Indicator />
+            </NativeSelect.Root>
           </div>
         </div>
         <div className="header-right" style={{ gap: '16px', alignItems: 'center' }}>
-        <HStack gap="2">
-        <Button onClick={() => setPantalla('mes')}>
-          Mes
-        </Button>
-        <Button onClick={() => setPantalla('historial')}>
-          Historial
-        </Button>
-        <Button variant="outline" onClick={() => setPantalla('ajustes')}>
-          Copias y ajustes
-        </Button>
-      </HStack>
-        <Toaster />
+          <HStack gap="2">
+            <Button onClick={() => setPantalla('mes')}>Mes</Button>
+            <Button onClick={() => setPantalla('historial')}>Historial</Button>
+            <Button variant="outline" onClick={() => setPantalla('ajustes')}>
+              Copias y ajustes
+            </Button>
+          </HStack>
+          <Toaster />
         </div>
       </header>
 
@@ -455,8 +448,8 @@ const App: React.FC = () => {
               {MESES_ES_MAYUSCULAS[mesActualVista - 1]} {año}
               {diasPendientes > 0 && (
                 <Badge colorPalette="orange" variant="subtle" size="md" ml="2">
-                ● {diasPendientes} días pendientes
-              </Badge>
+                  ● {diasPendientes} días pendientes
+                </Badge>
               )}
               {status.closed_at && (
                 <span className="status-pill cerrado" style={{ fontSize: '12px', marginLeft: '8px' }}>
@@ -474,113 +467,118 @@ const App: React.FC = () => {
                 boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
               }}
             >
-              <Table.ScrollArea maxH="70vh" borderWidth="1px" rounded="md">
-              <Table.Root size="sm" stickyHeader>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.ColumnHeader>Día</Table.ColumnHeader>
-                    <Table.ColumnHeader textAlign="end">Ingresos (€)</Table.ColumnHeader>
-                    <Table.ColumnHeader textAlign="center">¿Bizum?</Table.ColumnHeader>
-                    <Table.ColumnHeader textAlign="end">Gastos (€)</Table.ColumnHeader>
-                  </Table.Row>
-                </Table.Header>
+              <ScrollArea.Root height="70vh" borderWidth="1px" rounded="md">
+                <ScrollArea.Viewport>
+                  <ScrollArea.Content>
+                    <Table.Root size="sm" stickyHeader>
+                      <Table.Header>
+                        <Table.Row>
+                          <Table.ColumnHeader>Día</Table.ColumnHeader>
+                          <Table.ColumnHeader textAlign="end">Ingresos (€)</Table.ColumnHeader>
+                          <Table.ColumnHeader textAlign="center">¿Bizum?</Table.ColumnHeader>
+                          <Table.ColumnHeader textAlign="end">Gastos (€)</Table.ColumnHeader>
+                        </Table.Row>
+                      </Table.Header>
 
-                <Table.Body>
-                  {fechas.map((fecha) => {
-                    const reg = registros.get(fecha);
-                    const futuro = esFuturo(fecha);
-                    const cerrado = !!status.closed_at;
-                    const ingresoValor =
-                      reg?.income_cents != null ? formatearImporte(reg.income_cents).replace(' €', '') : '';
-                    const gastoValor =
-                      reg?.expense_cents != null ? formatearImporte(reg.expense_cents).replace(' €', '') : '';
+                      <Table.Body>
+                        {fechas.map((fecha) => {
+                          const reg = registros.get(fecha);
+                          const futuro = esFuturo(fecha);
+                          const cerrado = !!status.closed_at;
+                          const ingresoValor =
+                            reg?.income_cents != null ? formatearImporte(reg.income_cents).replace(' €', '') : '';
+                          const gastoValor =
+                            reg?.expense_cents != null ? formatearImporte(reg.expense_cents).replace(' €', '') : '';
 
-                    return (
-                      <Table.Row key={futuro ? `${fecha}-futuro` : fecha} opacity={futuro ? 0.5 : 1}>
-                        <Table.Cell fontWeight="medium" color="fg.muted">
-                          {fecha.slice(8, 10)} — {diaDeLaSemana(fecha)}
-                        </Table.Cell>
+                          return (
+                            <Table.Row key={futuro ? `${fecha}-futuro` : fecha} opacity={futuro ? 0.5 : 1}>
+                              <Table.Cell fontWeight="medium" color="fg.muted">
+                                {fecha.slice(8, 10)} — {diaDeLaSemana(fecha)}
+                              </Table.Cell>
 
-                        <Table.Cell textAlign="end">
-                          {cerrado ? (
-                            <Text>{reg?.income_cents != null ? formatearImporte(reg.income_cents) : '—'}</Text>
-                          ) : (
-                            <InputGroup endElement="€">
-                            <CampoImporte
-                            valor={ingresoValor}
-                            onGuardar={(t) => guardarIngreso(fecha, t)}
-                          />
-                          </InputGroup>
-                          )}
-                        </Table.Cell>
+                              <Table.Cell textAlign="end">
+                                {cerrado ? (
+                                  <Text>{reg?.income_cents != null ? formatearImporte(reg.income_cents) : '—'}</Text>
+                                ) : (
+                                  <InputGroup endElement="€">
+                                    <CampoImporte valor={ingresoValor} onGuardar={(t) => guardarIngreso(fecha, t)} />
+                                  </InputGroup>
+                                )}
+                              </Table.Cell>
 
-                        <Table.Cell textAlign="center">
-                          {cerrado ? (
-                            <Text>{reg?.bizum == null ? '—' : reg.bizum ? 'SÍ' : 'NO'}</Text>
-                          ) : (
-                            <Button
-                              size="xs"
-                              minW="60px"
-                              variant={reg?.bizum === true ? 'solid' : 'outline'}
-                              disabled={reg?.income_cents == null || reg.income_cents === 0}
-                              onClick={async () => {
-                                const newBizum = !(reg?.bizum === true);
-                                await window.electron.saveDay(
-                                  fecha,
-                                  reg?.income_cents ?? null,
-                                  newBizum,
-                                  reg?.expense_cents ?? null,
-                                  'bizum',
-                                  reg?.bizum != null ? String(reg.bizum) : null
-                                );
-                                await refrescarEntrada(fecha);
-                              }}
-                            >
-                              {reg?.bizum == null ? '—' : reg.bizum ? 'SÍ' : 'NO'}
-                            </Button>
-                          )}
-                        </Table.Cell>
+                              <Table.Cell textAlign="center">
+                                {cerrado ? (
+                                  <Text>{reg?.bizum == null ? '—' : reg.bizum ? 'SÍ' : 'NO'}</Text>
+                                ) : (
+                                  <Button
+                                    size="xs"
+                                    minW="60px"
+                                    variant={reg?.bizum === true ? 'solid' : 'outline'}
+                                    disabled={reg?.income_cents == null || reg.income_cents === 0}
+                                    onClick={async () => {
+                                      const newBizum = !(reg?.bizum === true);
+                                      await window.electron.saveDay(
+                                        fecha,
+                                        reg?.income_cents ?? null,
+                                        newBizum,
+                                        reg?.expense_cents ?? null,
+                                        'bizum',
+                                        reg?.bizum != null ? String(reg.bizum) : null
+                                      );
+                                      await refrescarEntrada(fecha);
+                                    }}
+                                  >
+                                    {reg?.bizum == null ? '—' : reg.bizum ? 'SÍ' : 'NO'}
+                                  </Button>
+                                )}
+                              </Table.Cell>
 
-                        <Table.Cell textAlign="end">
-                          {cerrado ? (
-                            <Text>{reg?.expense_cents != null ? formatearImporte(reg.expense_cents) : '—'}</Text>
-                          ) : (
-                            <Input
-                              size="sm"
-                              textAlign="end"
-                              inputMode="decimal"
-                              value={gastoValor}
-                              placeholder="—"
-                              onChange={(e) => guardarGasto(fecha, e.target.value)}
-                              onBlur={(e) => {
-                                if (e.target.value) guardarGasto(fecha, e.target.value);
-                              }}
-                            />
-                          )}
-                        </Table.Cell>
-                      </Table.Row>
-                    );
-                  })}
-                </Table.Body>
+                              <Table.Cell textAlign="end">
+                                {cerrado ? (
+                                  <Text>{reg?.expense_cents != null ? formatearImporte(reg.expense_cents) : '—'}</Text>
+                                ) : (
+                                  <Input
+                                    size="sm"
+                                    textAlign="end"
+                                    inputMode="decimal"
+                                    value={gastoValor}
+                                    placeholder="—"
+                                    onChange={(e) => guardarGasto(fecha, e.target.value)}
+                                    onBlur={(e) => {
+                                      if (e.target.value) guardarGasto(fecha, e.target.value);
+                                    }}
+                                  />
+                                )}
+                              </Table.Cell>
+                            </Table.Row>
+                          );
+                        })}
+                      </Table.Body>
 
-                <Table.Footer>
-                  <Table.Row bg="bg.muted" fontWeight="bold">
-                    <Table.Cell>TOTAL</Table.Cell>
-                    <Table.Cell textAlign="end">{formatearImporte(totales.totalIngresos)}</Table.Cell>
-                    <Table.Cell textAlign="center">{totales.diasConBizum} días</Table.Cell>
-                    <Table.Cell textAlign="end">
-                      {diasGastosPendientes > 0 ? (
-                        <Text as="span" color="orange.600">
-                          Parcial: {formatearImporte(totales.totalGastos)}
-                        </Text>
-                      ) : (
-                        formatearImporte(totales.totalGastos)
-                      )}
-                    </Table.Cell>
-                  </Table.Row>
-                </Table.Footer>
-              </Table.Root>
-            </Table.ScrollArea>
+                      <Table.Footer>
+                        <Table.Row bg="bg.muted" fontWeight="bold">
+                          <Table.Cell>TOTAL</Table.Cell>
+                          <Table.Cell textAlign="end">{formatearImporte(totales.totalIngresos)}</Table.Cell>
+                          <Table.Cell textAlign="center">{totales.diasConBizum} días</Table.Cell>
+                          <Table.Cell textAlign="end">
+                            {diasGastosPendientes > 0 ? (
+                              <Text as="span" color="orange.600">
+                                Parcial: {formatearImporte(totales.totalGastos)}
+                              </Text>
+                            ) : (
+                              formatearImporte(totales.totalGastos)
+                            )}
+                          </Table.Cell>
+                        </Table.Row>
+                      </Table.Footer>
+                    </Table.Root>
+                  </ScrollArea.Content>
+                </ScrollArea.Viewport>
+                <ScrollArea.Scrollbar>
+                  <ScrollArea.Thumb />
+                </ScrollArea.Scrollbar>
+                <ScrollArea.Corner />
+              </ScrollArea.Root>
 
               <div
                 className="acciones"

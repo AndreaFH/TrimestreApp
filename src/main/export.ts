@@ -83,7 +83,7 @@ export function validarExportacion(
   year: number,
   mes: Mes,
   registros: Map<string, RegistroDia>,
-  estado: EstadoMes,
+  estado: EstadoMes
 ): ValidacionExport {
   const avisos: string[] = [];
   const fechas = fechasDelMes(year, mes);
@@ -141,11 +141,7 @@ export function validarExportacion(
 // Word mensual (sección 6.1)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function crearTablaMensual(
-  year: number,
-  mes: Mes,
-  registros: Map<string, RegistroDia>,
-): Table {
+function crearTablaMensual(year: number, mes: Mes, registros: Map<string, RegistroDia>): Table {
   const fechas = fechasDelMes(year, mes);
   const totales = calcularTotalesMes(year, mes, registros);
 
@@ -204,11 +200,11 @@ function crearTablaMensual(
     const gasto = reg?.expense_cents != null ? formatearImporte(reg.expense_cents) : '';
     const bizum = reg?.bizum == null ? '' : reg.bizum ? 'SÍ' : 'NO';
     const esBizum = reg?.bizum === true;
-  
+
     // Fila Bizum: todo en amarillo. Resto: solo la celda Día en salmón, como antes
     const fondoDia = { type: ShadingType.CLEAR, fill: COLOR_SALMON };
     const fondoResto = esBizum ? { type: ShadingType.CLEAR, fill: COLOR_BIZUM } : undefined;
-  
+
     return new TableRow({
       height: { value: 369, rule: HeightRule.ATLEAST }, // 0.65 cm
       cantSplit: true,
@@ -273,7 +269,9 @@ function crearTablaMensual(
         children: [
           new Paragraph({
             alignment: AlignmentType.RIGHT,
-            children: [new TextRun({ text: formatearImporte(totales.totalIngresos), bold: true, size: 20, font: 'Arial' })],
+            children: [
+              new TextRun({ text: formatearImporte(totales.totalIngresos), bold: true, size: 20, font: 'Arial' }),
+            ],
           }),
         ],
       }),
@@ -357,25 +355,25 @@ export function generarWordMensual(
 
   // Cabecera con dos recuadros: Mes (10.5 cm) y Año (5.5 cm)
   // Mes (etiqueta 1.6 cm + valor 9 cm) · hueco 0.7 cm · Año (etiqueta 1.5 cm + valor 4.2 cm)
-const ANCHOS_CAB = [925, 5096, 387, 858, 2372]; // suman 9638
+  const ANCHOS_CAB = [925, 5096, 387, 858, 2372]; // suman 9638
 
-const headerTable = new Table({
-  width: { size: ANCHO_TOTAL, type: WidthType.DXA },
-  columnWidths: ANCHOS_CAB,
-  borders: TableBorders.NONE,
-  rows: [
-    new TableRow({
-      height: { value: 600, rule: HeightRule.ATLEAST },
-      children: [
-        celdaEtiqueta('Mes', ANCHOS_CAB[0]),
-        celdaValor(MESES_ES_MAYUSCULAS[mes - 1], ANCHOS_CAB[1]),
-        celdaHueco(ANCHOS_CAB[2]),
-        celdaEtiqueta('Año', ANCHOS_CAB[3], true),
-        celdaValor(String(year), ANCHOS_CAB[4]),
-      ],
-    }),
-  ],
-});
+  const headerTable = new Table({
+    width: { size: ANCHO_TOTAL, type: WidthType.DXA },
+    columnWidths: ANCHOS_CAB,
+    borders: TableBorders.NONE,
+    rows: [
+      new TableRow({
+        height: { value: 600, rule: HeightRule.ATLEAST },
+        children: [
+          celdaEtiqueta('Mes', ANCHOS_CAB[0]),
+          celdaValor(MESES_ES_MAYUSCULAS[mes - 1], ANCHOS_CAB[1]),
+          celdaHueco(ANCHOS_CAB[2]),
+          celdaEtiqueta('Año', ANCHOS_CAB[3], true),
+          celdaValor(String(year), ANCHOS_CAB[4]),
+        ],
+      }),
+    ],
+  });
 
   const doc = new Document({
     sections: [
@@ -476,7 +474,10 @@ export function generarWordTrimestral(
     return new TableRow({
       children: [
         new TableCell({ borders: BORDES, children: [new Paragraph({ text: MESES_ES_MAYUSCULAS[mes - 1] })] }),
-        new TableCell({ borders: BORDES, children: [new Paragraph({ text: formatearImporte(totales.totalIngresos) })] }),
+        new TableCell({
+          borders: BORDES,
+          children: [new Paragraph({ text: formatearImporte(totales.totalIngresos) })],
+        }),
         new TableCell({ borders: BORDES, children: [new Paragraph({ text: formatearImporte(totales.totalGastos) })] }),
         new TableCell({ borders: BORDES, children: [new Paragraph({ text: String(diasConIngreso) })] }),
         new TableCell({ borders: BORDES, children: [new Paragraph({ text: String(totales.diasConBizum) })] }),
