@@ -371,10 +371,7 @@ const App: React.FC = () => {
               className="accion-btn secundario"
               onClick={async () => {
                 const result = await window.electron.exportBackupDialog();
-                if (result) {
-                  setMensaje('Copia exportada');
-                  setTimeout(() => setMensaje(''), 2000);
-                }
+                if (result.success) setMensaje('Copia exportada');
               }}
             >
               Exportar copia
@@ -383,10 +380,11 @@ const App: React.FC = () => {
               className="accion-btn secundario"
               onClick={async () => {
                 const result = await window.electron.importBackupDialog();
-                if (result) {
-                  setMensaje('Copia importada');
-                  setTimeout(() => setMensaje(''), 2000);
+                if (result.success) {
+                  await cargarDatos(año, mesActualVista);
                   window.electron.getSettings().then(setAjustes);
+                  window.electron.checkBackupStale().then((r) => setCopiaAtrasada(r.stale));
+                  setMensaje('Copia importada');
                 }
               }}
             >

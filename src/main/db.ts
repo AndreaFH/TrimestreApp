@@ -270,17 +270,20 @@ export function saveSettings(settings: { business_name?: string; backup_folder?:
 // Copias de seguridad (sección 7.4)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Crea una copia de seguridad automática en la carpeta elegida */
-export function crearCopiaAutomatica(): string | null {
+/** Crea una copia de seguridad en la carpeta elegida.
+ *  manual = true: el nombre lleva la hora, para no pisar la copia automática del día. */
+export async function crearCopiaAutomatica(manual = false): Promise<string | null> {
   const settings = getSettings();
   if (!settings.backup_folder) return null;
 
-  const fecha = new Date().toISOString().slice(0, 10);
-  const nombre = `trimestre_backup_${fecha}.sqlite`;
+  const ahora = new Date().toISOString();
+  const fecha = ahora.slice(0, 10);
+  const hora = ahora.slice(11, 19).replace(/:/g, '-');
+  const nombre = manual ? `trimestre_backup_${fecha}_${hora}.sqlite` : `trimestre_backup_${fecha}.sqlite`;
   const destino = path.join(settings.backup_folder, nombre);
 
-  // Copia en caliente usando SQLite
-  getDb().backup(destino);
+  // Copia en caliente usando SQLite (asíncrona: hay que esperarla)
+  await getDb().backup(destino);
 
   // Limitar a las últimas 30 copias
   limitarCopias(settings.backup_folder, 30);
@@ -305,10 +308,14 @@ function limitarCopias(carpeta: string, max: number): void {
   }
 }
 
-/** Exporta una copia de seguridad a una ruta elegida por el usuario */
+/** Vuelca el WAL al fichero principal para que copiar el fichero incluya todos los datos */
+function volcarWal(): void {
+  getDb().pragma('wal_checkpoint(TRUNCATE)');
+}
+
 export function exportarCopia(destino: string): void {
-  const dbPath = getDbPath();
-  fs.copyFileSync(dbPath, destino);
+  volcarWal();
+  fs.copyFileSync(getDbPath(), destino);
 }
 
 /** Comprueba si la copia de seguridad está atrasada (más de 7 días) */
@@ -363,24 +370,28 @@ export function validarCopia(ruta: string): { valido: boolean; error?: string } 
 
 /** Importa una copia de seguridad (con copia previa de seguridad) */
 export function importarCopia(ruta: string): void {
-  // Validar primero
   const validacion = validarCopia(ruta);
   if (!validacion.valido) {
     throw new Error(validacion.error || 'Copia no válida');
   }
 
-  // Hacer copia de seguridad de los datos actuales antes de importar
+  // Copia previa de los datos actuales (con fecha y hora, para no sobrescribir otra del mismo día)
   const dbPath = getDbPath();
-  const fecha = new Date().toISOString().slice(0, 10);
-  const backupPrevio = path.join(path.dirname(dbPath), `trimestre_previo_${fecha}.sqlite`);
+  const marca = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+  const backupPrevio = path.join(path.dirname(dbPath), `trimestre_previo_${marca}.sqlite`);
+  volcarWal();
   fs.copyFileSync(dbPath, backupPrevio);
 
-  // Cerrar conexión actual, copiar fichero y reabrir
+  // Cerrar conexión actual
   if (db) {
     db.close();
     db = null;
   }
 
+  // Borrar restos del WAL anterior para que no se mezclen con la base importada
+  for (const sufijo of ['-wal', '-shm']) {
+    fs.rmSync(dbPath + sufijo, { force: true });
+  }
   fs.copyFileSync(ruta, dbPath);
   initDb();
 }
