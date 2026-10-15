@@ -38,7 +38,11 @@ export interface Settings {
 // API expuesta a la interfaz
 // ─────────────────────────────────────────────────────────────────────────────
 
-contextBridge.exposeInMainWorld('electron', {
+// Log para diagnosticar si el preload se ejecuta
+console.log('[preload] Iniciando script de preload...');
+
+try {
+  contextBridge.exposeInMainWorld('electron', {
   // Registros diarios
   getMonthEntries: (year: number, month: number): Promise<DayEntry[]> =>
     ipcRenderer.invoke('get-month-entries', year, month),
@@ -98,4 +102,9 @@ contextBridge.exposeInMainWorld('electron', {
     ipcRenderer.invoke('export-excel-quarterly', year, trimestre),
   exportPdfMonthly: (year: number, mes: number): Promise<{ success: boolean; path?: string }> =>
     ipcRenderer.invoke('export-pdf-monthly', year, mes),
-});
+  });
+
+  console.log('[preload] API electron expuesta correctamente');
+} catch (error) {
+  console.error('[preload] Error al exponer API electron:', error);
+}

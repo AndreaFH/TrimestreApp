@@ -105,9 +105,20 @@ function createWindow(): void {
     mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
   }
 
-  // Al cerrar, hacer copia de seguridad automática
-  mainWindow.on('closed', () => {
+  // Al cerrar, hacer copia de seguridad automática y cerrar la base de datos
+  let cerrando = false;
+
+  mainWindow.on('close', async (event) => {
+    if (cerrando) return;
+    event.preventDefault(); // frena el cierre hasta terminar la copia
+    cerrando = true;
+    try {
+      await crearCopiaAutomatica();
+    } catch (error) {
+      console.error('No se pudo crear la copia automática:', error);
+    }
     closeDb();
+    mainWindow.destroy(); // ahora sí cierra la ventana
   });
 }
 
@@ -211,8 +222,8 @@ function setupIpc(): void {
   });
 
   // Copia de seguridad automática al cerrar
-  ipcMain.handle('create-auto-backup', () => {
-    const result = crearCopiaAutomatica();
+  ipcMain.handle('create-auto-backup', async () => {
+    const result = await crearCopiaAutomatica(true);
     return { success: true, path: result };
   });
 
@@ -271,8 +282,13 @@ function setupIpc(): void {
       detail: 'Se guardará una copia de seguridad de los datos actuales antes de importar.',
     });
     if (respuesta === 0) return { success: false };
-    importarCopia(ruta);
-    return { success: true };
+    try {
+      importarCopia(ruta);
+      return { success: true };
+    } catch (e) {
+      dialog.showErrorBox('No se pudo importar', e instanceof Error ? e.message : 'Error desconocido');
+      return { success: false };
+    }
   });
 
   // ── Exportaciones (sección 6) ──────────────────────────────────────────────
