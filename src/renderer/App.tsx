@@ -897,7 +897,7 @@ const App: React.FC = () => {
                                       {reg?.income_cents != null ? formatearImporte(reg.income_cents) : '—'}
                                     </Text>
                                   ) : (
-                                    <InputGroup endElement="€" size="sm">
+                                    <InputGroup endElement="€">
                                       <CampoImporte valor={ingresoValor} onGuardar={(t) => guardarIngreso(fecha, t)} />
                                     </InputGroup>
                                   )}
