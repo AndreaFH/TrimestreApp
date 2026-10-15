@@ -1,7 +1,7 @@
 {
   "name": "trimestre-app",
   "productName": "Ingresos y Gastos Trimestrales",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Aplicación de escritorio para registro de ingresos y gastos trimestrales",
   "main": "dist/main/index.js",
   "author": "Andrea",
