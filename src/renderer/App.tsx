@@ -1,5 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { NativeSelect, Button, HStack, Table, Input, Text, Badge, InputGroup, ScrollArea } from '@chakra-ui/react';
+import {
+  NativeSelect,
+  Button,
+  Group,
+  HStack,
+  Table,
+  Input,
+  Text,
+  Badge,
+  InputGroup,
+  ScrollArea,
+  Alert,
+} from '@chakra-ui/react';
+import { FaFileWord, FaFilePdf, FaFileExcel } from 'react-icons/fa';
 import { Toaster, toaster } from './toaster';
 import {
   trimestreDeMes,
@@ -580,137 +593,72 @@ const App: React.FC = () => {
                 <ScrollArea.Corner />
               </ScrollArea.Root>
 
-              <div
-                className="acciones"
-                style={{ marginTop: '24px', gap: '16px', flexWrap: 'wrap', justifyContent: 'flex-end' }}
-              >
-                {!status.closed_at && (
-                  <>
-                    <button
-                      className="accion-btn secundario"
-                      onClick={() => {
-                        const fecha = hoyEnMadrid();
-                        sinIngresos(fecha);
-                      }}
-                    >
-                      Sin ingresos
-                    </button>
-                    {diasGastosPendientes === 0 && !status.expenses_complete && (
-                      <button className="accion-btn secundario" onClick={marcarGastosCompletos}>
-                        Marcar gastos completos
-                      </button>
-                    )}
-                    {diasPendientes === 0 && (
-                      <button className="accion-btn primario" onClick={cerrarMes}>
-                        Cerrar mes
-                      </button>
-                    )}
-                  </>
-                )}
-                {status.closed_at && (
-                  <button className="accion-btn secundario" onClick={reabrirMes}>
-                    Reabrir mes
-                  </button>
-                )}
-                <button className="accion-btn secundario" onClick={() => deshacerUltimo(hoy)}>
-                  Deshacer último
-                </button>
-              </div>
-
               {diasPendientes > 0 && (
-                <p
-                  className="aviso-banner"
-                  style={{
-                    margin: '16px 0',
-                    padding: '12px 16px',
-                    background: '#FFF7F3',
-                    border: '1px solid #F6E4E0',
-                    borderRadius: '8px',
-                    color: '#2D3748',
-                  }}
-                >
-                  ● {diasPendientes} días con ingresos pendientes
-                </p>
-              )}
-              {diasGastosPendientes > 0 && (
-                <p
-                  className="aviso-banner"
-                  style={{
-                    margin: '16px 0',
-                    padding: '12px 16px',
-                    background: '#FFF7F3',
-                    border: '1px solid #F6E4E0',
-                    borderRadius: '8px',
-                    color: '#2D3748',
-                  }}
-                >
-                  ● {diasGastosPendientes} días con gastos pendientes
-                </p>
-              )}
-              {status.closed_at && (
-                <p
-                  className="aviso-banner cerrado"
-                  style={{
-                    margin: '16px 0',
-                    padding: '12px 16px',
-                    background: '#EDF2F1',
-                    border: '1px solid #CBD3E0',
-                    borderRadius: '8px',
-                    color: '#2D3748',
-                  }}
-                >
-                  Mes cerrado — {new Date(status.closed_at).toLocaleDateString('es-ES')}
-                </p>
+                <Alert.Root status="warning" variant="subtle" my="4">
+                  <Alert.Indicator />
+                  <Alert.Content>
+                    <Alert.Title>{diasPendientes} días con ingresos pendientes</Alert.Title>
+                  </Alert.Content>
+                </Alert.Root>
               )}
 
-              <div
-                className="acciones"
-                style={{ marginTop: '24px', gap: '16px', flexWrap: 'wrap', justifyContent: 'flex-end' }}
-              >
-                <span style={{ fontWeight: 'bold', marginRight: '10px' }}>Exportar:</span>
-                <button
-                  className="accion-btn secundario"
-                  onClick={async () => {
-                    const r = await window.electron.exportWordMonthly(año, mesActualVista as Mes);
-                    setMensaje(r.success ? `Word guardado: ${r.path}` : 'Cancelado');
-                    setTimeout(() => setMensaje(''), 3000);
-                  }}
-                >
-                  Word mensual
-                </button>
-                <button
-                  className="accion-btn secundario"
-                  onClick={async () => {
-                    const r = await window.electron.exportPdfMonthly(año, mesActualVista as Mes);
-                    setMensaje(r.success ? `PDF guardado: ${r.path}` : 'Cancelado');
-                    setTimeout(() => setMensaje(''), 3000);
-                  }}
-                >
-                  PDF mensual
-                </button>
-                <button
-                  className="accion-btn secundario"
-                  onClick={async () => {
-                    const tri = trimestreDeMes(mesActualVista);
-                    const r = await window.electron.exportWordQuarterly(año, tri);
-                    setMensaje(r.success ? `Word T${tri} guardado: ${r.path}` : 'Cancelado');
-                    setTimeout(() => setMensaje(''), 3000);
-                  }}
-                >
-                  Word trimestral
-                </button>
-                <button
-                  className="accion-btn secundario"
-                  onClick={async () => {
-                    const tri = trimestreDeMes(mesActualVista);
-                    const r = await window.electron.exportExcelQuarterly(año, tri);
-                    setMensaje(r.success ? `Excel T${tri} guardado: ${r.path}` : 'Cancelado');
-                    setTimeout(() => setMensaje(''), 3000);
-                  }}
-                >
-                  Excel trimestral
-                </button>
-              </div>
+              <HStack mt="6" gap="4" wrap="wrap" justify="flex-end">
+                <Text fontWeight="bold">Exportar:</Text>
+
+                <Group attached>
+                  <Button
+                    variant="outline"
+                    colorPalette="blue"
+                    onClick={async () => {
+                      const r = await window.electron.exportWordMonthly(año, mesActualVista as Mes);
+                      setMensaje(r.success ? `Word guardado: ${r.path}` : 'Cancelado', r.success ? 'success' : 'info');
+                    }}
+                  >
+                    <FaFileWord /> Word mensual
+                  </Button>
+                  <Button
+                    variant="outline"
+                    colorPalette="red"
+                    onClick={async () => {
+                      const r = await window.electron.exportPdfMonthly(año, mesActualVista as Mes);
+                      setMensaje(r.success ? `PDF guardado: ${r.path}` : 'Cancelado', r.success ? 'success' : 'info');
+                    }}
+                  >
+                    <FaFilePdf /> PDF mensual
+                  </Button>
+                </Group>
+
+                <Group attached>
+                  <Button
+                    variant="outline"
+                    colorPalette="blue"
+                    onClick={async () => {
+                      const tri = trimestreDeMes(mesActualVista);
+                      const r = await window.electron.exportWordQuarterly(año, tri);
+                      setMensaje(
+                        r.success ? `Word T${tri} guardado: ${r.path}` : 'Cancelado',
+                        r.success ? 'success' : 'info'
+                      );
+                    }}
+                  >
+                    <FaFileWord /> Word trimestral
+                  </Button>
+                  <Button
+                    variant="outline"
+                    colorPalette="green"
+                    onClick={async () => {
+                      const tri = trimestreDeMes(mesActualVista);
+                      const r = await window.electron.exportExcelQuarterly(año, tri);
+                      setMensaje(
+                        r.success ? `Excel T${tri} guardado: ${r.path}` : 'Cancelado',
+                        r.success ? 'success' : 'info'
+                      );
+                    }}
+                  >
+                    <FaFileExcel /> Excel trimestral
+                  </Button>
+                </Group>
+              </HStack>
             </div>
           </>
         )}
