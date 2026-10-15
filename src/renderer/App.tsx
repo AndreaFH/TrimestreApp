@@ -16,7 +16,6 @@ import { FaFileWord, FaFilePdf, FaFileExcel } from 'react-icons/fa';
 import { Toaster, toaster } from './toaster';
 import {
   trimestreDeMes,
-  mesesDeTrimestre,
   fechasDelMes,
   diaDeLaSemana,
   parsearImporte,
@@ -24,7 +23,6 @@ import {
   calcularTotalesMes,
   hoyEnMadrid,
   esFuturo,
-  MESES_ES,
   MESES_ES_MAYUSCULAS,
 } from '../index';
 import type { Mes } from '../index';
@@ -81,7 +79,7 @@ const App: React.FC = () => {
   const mesActual = parseInt(hoy.slice(5, 7), 10);
 
   const [año, setAño] = useState<number>(añoActual);
-  const [trimestre, setTrimestre] = useState<number>(trimestreDeMes(mesActual));
+  const [, setTrimestre] = useState<number>(trimestreDeMes(mesActual));
   const [registros, setRegistros] = useState<RegistroMap>(new Map());
   const [status, setStatus] = useState<MonthStatus>({ closed_at: null, expenses_complete: false });
   const [mesActualVista, setMesActualVista] = useState<number>(mesActual);
@@ -140,11 +138,6 @@ const App: React.FC = () => {
   const cambiarMes = (mes: number) => {
     setMesActualVista(mes);
     setTrimestre(trimestreDeMes(mes));
-  };
-
-  const cambiarTrimestre = (t: number) => {
-    setTrimestre(t);
-    setMesActualVista(mesesDeTrimestre(t as 1 | 2 | 3 | 4)[0]);
   };
 
   const cambiarAño = (y: number) => {
@@ -219,54 +212,6 @@ const App: React.FC = () => {
     }
   };
 
-  const sinIngresos = async (fecha: string) => {
-    const old = registros.get(fecha) ?? null;
-    await window.electron.saveDay(
-      fecha,
-      0,
-      false,
-      old?.expense_cents ?? null,
-      'income_cents',
-      old?.income_cents != null ? String(old.income_cents) : null
-    );
-    await refrescarEntrada(fecha);
-    setMensaje('Guardado');
-    setTimeout(() => setMensaje(''), 2000);
-  };
-
-  const cerrarMes = async () => {
-    if (confirm('¿Cerrar este mes? No se podrá editar hasta reabrirlo.')) {
-      await window.electron.closeMonth(año, mesActualVista);
-      setStatus((prev) => ({ ...prev, closed_at: new Date().toISOString() }));
-    }
-  };
-
-  const reabrirMes = async () => {
-    if (confirm('¿Reabrir este mes? Se anotará en el historial.')) {
-      await window.electron.reopenMonth(año, mesActualVista);
-      setStatus((prev) => ({ ...prev, closed_at: null }));
-    }
-  };
-
-  const marcarGastosCompletos = async () => {
-    if (confirm('¿Confirmar que no falta ningún gasto?')) {
-      await window.electron.setExpensesComplete(año, mesActualVista, true);
-      setStatus((prev) => ({ ...prev, expenses_complete: true }));
-    }
-  };
-
-  const deshacerUltimo = async (fecha: string) => {
-    const result = await window.electron.undoLast(fecha);
-    if (result.success) {
-      await refrescarEntrada(fecha);
-      setMensaje('Deshaciendo...');
-      setTimeout(() => setMensaje(''), 2000);
-    } else {
-      setMensaje(result.error || 'No hay nada que deshacer');
-      setTimeout(() => setMensaje(''), 3000);
-    }
-  };
-
   const fechas = fechasDelMes(año, mesActualVista as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12);
   const diasPendientes = fechas.filter((f) => {
     const reg = registros.get(f);
@@ -279,8 +224,6 @@ const App: React.FC = () => {
     if (!reg || reg.expense_cents === null) return !esFuturo(f);
     return false;
   }).length;
-
-  const meses = mesesDeTrimestre(trimestre as 1 | 2 | 3 | 4);
 
   return (
     <div className="app">

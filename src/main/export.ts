@@ -347,12 +347,9 @@ export function generarWordMensual(
   year: number,
   mes: Mes,
   registros: Map<string, RegistroDia>,
-  gastosPendientes: number,
   _estado: EstadoMes,
   businessName: string
 ): Document {
-  const fechaGen = new Date().toLocaleDateString('es-ES');
-
   // Cabecera con dos recuadros: Mes (10.5 cm) y Año (5.5 cm)
   // Mes (etiqueta 1.6 cm + valor 9 cm) · hueco 0.7 cm · Año (etiqueta 1.5 cm + valor 4.2 cm)
   const ANCHOS_CAB = [925, 5096, 387, 858, 2372]; // suman 9638

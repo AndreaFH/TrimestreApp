@@ -303,7 +303,7 @@ function setupIpc(): void {
       if ((!reg || reg.expense_cents === null) && !esFuturo(f)) gastosPendientes++;
     }
 
-    const doc = generarWordMensual(year, mes, registros, gastosPendientes, estado, negocio);
+    const doc = generarWordMensual(year, mes, registros, estado, negocio);
     const buffer = await Packer.toBuffer(doc);
     fs.writeFileSync(result.filePath, buffer);
     return { success: true, path: result.filePath };
@@ -381,7 +381,6 @@ function setupIpc(): void {
     for (const e of entries) {
       registros.set(e.date, { income_cents: e.income_cents, bizum: e.bizum, expense_cents: e.expense_cents });
     }
-    const estado = getMonthStatus(year, mes);
 
     const fechas = fechasDelMes(year, mes);
     let gastosPendientes = 0;
@@ -391,7 +390,6 @@ function setupIpc(): void {
     }
 
     const totales = calcularTotalesMes(year, mes, registros);
-    const fechaGen = new Date().toLocaleDateString('es-ES');
 
     // Generar filas de la tabla
     const filasHtml = fechas
@@ -404,11 +402,6 @@ function setupIpc(): void {
         return `<tr${clase}><td class="dia">${formatearDiaDocumento(f)}</td><td class="num">${ingreso}</td><td class="ctr">${bizum}</td><td class="num">${gasto}</td></tr>`;
       })
       .join('\n');
-
-    const totalGastoTexto =
-      gastosPendientes > 0
-        ? `Parcial: ${formatearImporte(totales.totalGastos)}`
-        : formatearImporte(totales.totalGastos);
 
     const html = `<!DOCTYPE html>
 <html>
